@@ -1,0 +1,16 @@
+{
+  "name": "pushgenius-react-native",
+  "version": "0.1.0",
+  "description": "PushGenius React Native SDK (OneSignal-compatible public API)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "react-native": "src/index.ts",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

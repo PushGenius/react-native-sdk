@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.swift_version = "5.9"
   s.frameworks   = "UserNotifications"
+  s.resource_bundles = { "PushGeniusReactNativePrivacy" => ["ios/PushGeniusCore/PrivacyInfo.xcprivacy"] }
 
   if respond_to?(:install_modules_dependencies, true)
     install_modules_dependencies(s)

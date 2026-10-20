@@ -47,11 +47,11 @@ class NotificationsNamespace {
     return PushGeniusNative?.requestPermission(fallbackToSettings) ?? Promise.resolve(false);
   }
   addClickListener(listener: (event: ClickEvent) => void) {
-    emitter?.addListener("OneSignal-notificationClicked", listener);
+    emitter?.addListener("BigBrain-notificationClicked", listener);
   }
 }
 
-export const OneSignal = {
+export const BigBrain = {
   User: new UserNamespace(),
   Notifications: new NotificationsNamespace(),
   initialize(appId: string) {
@@ -68,5 +68,5 @@ export const OneSignal = {
   },
 };
 
-export const PushGenius = OneSignal;
-export default OneSignal;
+export const PushGenius = BigBrain;
+export default BigBrain;

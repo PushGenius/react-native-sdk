@@ -7,7 +7,7 @@
 RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents {
-  return @[@"OneSignal-notificationClicked"];
+  return @[@"BigBrain-notificationClicked"];
 }
 
 RCT_EXPORT_METHOD(setHost:(NSString *)url) {

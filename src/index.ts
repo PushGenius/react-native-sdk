@@ -3,7 +3,10 @@ import { NativeModules, NativeEventEmitter, Platform } from "react-native";
 type ClickEvent = { notificationId: string; additionalData?: Record<string, unknown> };
 
 const { PushGeniusNative } = NativeModules;
-const emitter = PushGeniusNative ? new NativeEventEmitter(PushGeniusNative) : null;
+const CLICK_EVENT = "BigBrain-notificationClicked";
+const emitter = PushGeniusNative
+  ? new NativeEventEmitter<{ [CLICK_EVENT]: [ClickEvent] }>(PushGeniusNative)
+  : null;
 
 class PushSubscription {
   get id(): string | null {
@@ -46,8 +49,9 @@ class NotificationsNamespace {
   requestPermission(fallbackToSettings = true): Promise<boolean> {
     return PushGeniusNative?.requestPermission(fallbackToSettings) ?? Promise.resolve(false);
   }
+  /** Returns a subscription; call `.remove()` on it to stop listening. */
   addClickListener(listener: (event: ClickEvent) => void) {
-    emitter?.addListener("BigBrain-notificationClicked", listener);
+    return emitter?.addListener(CLICK_EVENT, listener);
   }
 }
 

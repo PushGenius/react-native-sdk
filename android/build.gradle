@@ -1,0 +1,44 @@
+buildscript {
+  ext.safeExtGet = { name, fallback -> rootProject.ext.has(name) ? rootProject.ext.get(name) : fallback }
+  repositories {
+    google()
+    mavenCentral()
+  }
+  dependencies {
+    classpath "com.android.tools.build:gradle:8.6.1"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${safeExtGet('kotlinVersion', '2.1.21')}"
+  }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+  namespace = "us.pushgeni.rn"
+  compileSdk = safeExtGet("compileSdkVersion", 35)
+
+  defaultConfig {
+    minSdk = safeExtGet("minSdkVersion", 24)
+    targetSdk = safeExtGet("targetSdkVersion", 35)
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+
+repositories {
+  google()
+  mavenCentral()
+}
+
+dependencies {
+  // The version comes from the app's React Native Gradle plugin.
+  implementation "com.facebook.react:react-android"
+  implementation "com.google.firebase:firebase-messaging:24.1.1"
+}

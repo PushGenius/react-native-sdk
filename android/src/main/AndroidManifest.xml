@@ -1,0 +1,35 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <application>
+        <!-- Class names are fully qualified so this file can be copied into the wrapper SDKs as-is. -->
+        <service
+            android:name="us.pushgeni.sdk.PushGeniusMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <provider
+            android:name="us.pushgeni.sdk.PushGeniusInitProvider"
+            android:authorities="${applicationId}.pushgenius-init"
+            android:exported="false" />
+        <activity
+            android:name="us.pushgeni.sdk.NotificationOpenedActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="us.pushgeni.sdk.NOTIFICATION_OPENED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="us.pushgeni.sdk.PermissionActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+    </application>
+</manifest>

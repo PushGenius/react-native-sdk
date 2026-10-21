@@ -29,6 +29,23 @@ const subscription = BigBrain.Notifications.addClickListener((event) => {
 // later: subscription?.remove();
 ```
 
+## Count notifications received in the background (iOS)
+
+iOS doesn't run your app when a notification arrives in the background, so by default the SDK can only report notifications that arrive while the app is open. To count every notification, add a Notification Service Extension. iOS runs it for each notification, even when your app is closed.
+
+1. In Xcode, choose **File → New → Target → Notification Service Extension** and name it `NotificationService`. Set its minimum iOS version to match your app's (iOS 15 or later).
+2. Choose **File → Add Package Dependencies**, enter `https://github.com/PushGenius/ios-sdk.git`, and add the **PushGeniusNotificationService** library to the extension target only. This works alongside CocoaPods.
+3. Replace the contents of the extension's `NotificationService.swift` with:
+
+   ```swift
+   import PushGeniusNotificationService
+
+   class NotificationService: BigBrainNotificationService {}
+   ```
+
+If you call `setHost`, also override the host in the extension: `override var host: String { "https://your-host" }`.
+
+
 ## Developing
 
 The native iOS and Android SDK sources are vendored into `ios/PushGeniusCore` and `android/src/main/java/us/pushgeni/sdk`. After changing either native SDK, run `npm run sync-native` (expects the `ios` and `android` SDK repos next to this one) and commit the result. Don't edit the vendored copies directly.

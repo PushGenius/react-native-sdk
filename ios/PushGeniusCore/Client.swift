@@ -1,5 +1,8 @@
 import Foundation
 
+/// Sent with every registration.
+let sdkVersion = "0.2.0"
+
 /// SDK state is read synchronously by the public API and written from network callbacks,
 /// so it lives behind a lock rather than in an actor.
 final class Client: @unchecked Sendable {
@@ -120,7 +123,7 @@ final class Client: @unchecked Sendable {
         "token": token,
         "enabled": optedIn,
         "notification_types": optedIn ? 1 : -2,
-        "sdk": "pushgenius/0.1.0",
+        "sdk": "pushgenius/\(sdkVersion)",
         "device_os": "iOS",
       ])
     }
@@ -198,9 +201,12 @@ final class Client: @unchecked Sendable {
     DispatchQueue.main.async { listeners.forEach { $0(event) } }
   }
 
-  func track(event: String, notificationId: String) {
+  /// The notification's own app and subscription IDs win over the saved ones.
+  func track(event: String, notificationId: String, subscriptionId: String? = nil, appId: String? = nil) {
     Task {
-      guard let subscriptionId = self.subscriptionId else { return }
+      guard let subscriptionId = subscriptionId ?? self.subscriptionId else { return }
+      let appId = appId ?? self.appId
+      guard !appId.isEmpty else { return }
       _ = await self.post(path: "/sdk/apps/\(appId)/events", body: [
         "event": event,
         "notification_id": notificationId,

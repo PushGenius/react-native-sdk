@@ -145,7 +145,11 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
   ) {
     if let id = Self.notificationId(notification.request.content.userInfo) {
       Client.shared.emitForeground(NotificationWillDisplayEvent(notificationId: id, body: notification.request.content.body))
-      Client.shared.track(event: "received", notificationId: id)
+      let data = notification.request.content.userInfo["data"] as? [String: Any]
+      Client.shared.track(
+        event: "received", notificationId: id,
+        subscriptionId: data?["subscription_id"] as? String, appId: data?["app_id"] as? String
+      )
     }
     let selector = #selector(UNUserNotificationCenterDelegate.userNotificationCenter(_:willPresent:withCompletionHandler:))
     if let previous, previous.responds(to: selector) {
@@ -164,7 +168,10 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     if let id = Self.notificationId(userInfo) {
       let extra = (userInfo["data"] as? [String: Any]) ?? [:]
       Client.shared.emitClick(NotificationClickEvent(notificationId: id, additionalData: extra))
-      Client.shared.track(event: "clicked", notificationId: id)
+      Client.shared.track(
+        event: "clicked", notificationId: id,
+        subscriptionId: extra["subscription_id"] as? String, appId: extra["app_id"] as? String
+      )
     }
     let selector = #selector(UNUserNotificationCenterDelegate.userNotificationCenter(_:didReceive:withCompletionHandler:))
     if let previous, previous.responds(to: selector) {

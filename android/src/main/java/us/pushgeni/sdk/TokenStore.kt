@@ -48,14 +48,20 @@ class PushGeniusMessagingService : FirebaseMessagingService() {
     }
 
     /**
-     * Only called while the app is in the foreground (in the background, Android shows the
-     * notification itself). Android doesn't display foreground notifications, so the SDK does.
+     * PushGenius sends data-only messages, which arrive here whether the app is open, in the background,
+     * or not running, so the SDK displays every notification and can report each one as received.
+     * Messages sent with a notification block (to older SDKs) only arrive here while the app is open.
      */
     override fun onMessageReceived(message: RemoteMessage) {
-        val id = message.data["notification_id"] ?: return
+        val data = message.data
+        val id = data["notification_id"] ?: return
         AppContext.attach(applicationContext)
-        Client.track("received", id)
-        val notification = message.notification ?: return
-        NotificationDisplay.show(this, notification.title, notification.body, notification.channelId, message.data)
+        val title = message.notification?.title ?: data["pg_title"]
+        val body = message.notification?.body ?: data["pg_body"]
+        if (title == null && body == null) return
+        val channel = message.notification?.channelId ?: data["pg_channel"]
+        if (NotificationDisplay.show(this, title, body, channel, data)) {
+            Client.track("received", id, data["subscription_id"], data["app_id"])
+        }
     }
 }

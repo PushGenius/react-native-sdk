@@ -11,6 +11,9 @@ import java.net.URL
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 
+/** Sent with every registration. The server sends data-only messages to 0.2.0+, which display them itself. */
+internal const val SDK_VERSION = "0.2.0"
+
 internal object Client {
     @Volatile var bigBrainId: String? = null
     @Volatile var externalId: String? = null
@@ -78,7 +81,7 @@ internal object Client {
                 put("token", token)
                 put("enabled", optedIn)
                 put("notification_types", if (optedIn) 1 else -2)
-                put("sdk", "pushgenius/0.1.0")
+                put("sdk", "pushgenius/$SDK_VERSION")
                 put("device_os", "Android")
             })
         }
@@ -137,11 +140,14 @@ internal object Client {
         }
     }
 
-    fun track(event: String, notificationId: String) {
+    /** The notification's own app and subscription IDs win over the saved ones, which may not be loaded yet. */
+    fun track(event: String, notificationId: String, subscriptionId: String? = null, appId: String? = null) {
         io.execute {
-            val sub = subscriptionId ?: return@execute
+            val sub = subscriptionId ?: this.subscriptionId ?: return@execute
+            val app = appId ?: this.appId
+            if (app.isEmpty()) return@execute
             post(
-                "/sdk/apps/$appId/events",
+                "/sdk/apps/$app/events",
                 JSONObject()
                     .put("event", event)
                     .put("notification_id", notificationId)

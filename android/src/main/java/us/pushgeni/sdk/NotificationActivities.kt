@@ -40,13 +40,15 @@ class NotificationOpenedActivity : Activity() {
         AppContext.attach(applicationContext)
         val extras = intent?.extras
         val data = extras?.keySet()
-            ?.filterNot { it.startsWith("google.") || it.startsWith("gcm.") || it == "from" || it == "collapse_key" }
+            ?.filterNot {
+                it.startsWith("google.") || it.startsWith("gcm.") || it.startsWith("pg_") || it == "from" || it == "collapse_key"
+            }
             ?.mapNotNull { key -> extras.getString(key)?.let { key to it } }
             ?.toMap()
             .orEmpty()
         data["notification_id"]?.let { id ->
             Client.emitClick(NotificationClickEvent(id, data))
-            Client.track("clicked", id)
+            Client.track("clicked", id, data["subscription_id"], data["app_id"])
         }
         packageManager.getLaunchIntentForPackage(packageName)?.let { launch ->
             launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
@@ -60,15 +62,16 @@ class NotificationOpenedActivity : Activity() {
 internal object NotificationDisplay {
     private const val DEFAULT_CHANNEL = "pushgenius_default"
 
-    fun show(context: Context, title: String?, body: String?, channelId: String?, data: Map<String, String>) {
+    /** Returns whether the notification was shown. */
+    fun show(context: Context, title: String?, body: String?, channelId: String?, data: Map<String, String>): Boolean {
         if (Build.VERSION.SDK_INT >= 33 &&
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) return
-        val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        ) return false
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return false
         val channel = resolveChannel(context, manager, channelId)
 
         val open = Intent(context, NotificationOpenedActivity::class.java).setAction(NOTIFICATION_OPENED_ACTION)
-        data.forEach { (key, value) -> open.putExtra(key, value) }
+        data.filterKeys { !it.startsWith("pg_") }.forEach { (key, value) -> open.putExtra(key, value) }
         val requestCode = (data["notification_id"] ?: System.currentTimeMillis().toString()).hashCode()
         val pending = PendingIntent.getActivity(
             context, requestCode, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
@@ -84,10 +87,12 @@ internal object NotificationDisplay {
             .setAutoCancel(true)
             .setContentIntent(pending)
             .build()
-        try {
+        return try {
             manager.notify(requestCode, notification)
+            true
         } catch (_: SecurityException) {
             // Permission was revoked between the check and the call.
+            false
         }
     }
 
